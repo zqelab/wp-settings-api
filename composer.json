@@ -1,10 +1,10 @@
 {
     "name": "zqelab/wp-settings-api",
     "type": "library",
-    "description": "WordPress settings api Class",
+    "description": "WordPress settings api Class to make option page",
     "keywords": ["wp","wordpress", "settings-api"],
     "homepage": "https://github.com/zqelab/wp-settings-api",
-    "license": "GPLv2",
+    "license": "GPL-2.0-or-later",
     "authors": [
         {
             "name": "ZQE",
