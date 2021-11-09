@@ -1,7 +1,7 @@
 {
     "name": "zqelab/wp-settings-api",
     "type": "library",
-    "description": "WordPress settings API Abstraction Class",
+    "description": "WordPress settings api Class",
     "keywords": ["wp","wordpress", "settings-api"],
     "homepage": "https://github.com/zqelab/wp-settings-api",
     "license": "GPLv2",
@@ -9,7 +9,7 @@
         {
             "name": "ZQE",
             "email": "dev@zqe.io",
-            "homepage": "http://zqe.io",
+            "homepage": "https://zqe.io",
             "role": "Developer"
         }
     ],
