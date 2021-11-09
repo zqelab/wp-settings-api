@@ -1,0 +1,10 @@
+{
+    "name": "zqe/wp-settings-api",
+    "authors": [
+        {
+            "name": "ZQE",
+            "email": "dev@zqe.io"
+        }
+    ],
+    "require": {}
+}
