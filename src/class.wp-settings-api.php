@@ -6,21 +6,63 @@ class Wp_Settings_Api {
     protected $name; 
     protected $pages = array();
     protected $defaults = array();
+
+    /**
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function __construct() {
         add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
     }
+
+    /**
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function admin_enqueue_scripts() {
-        wp_enqueue_style( 'wp-color-picker' );
-        wp_enqueue_script( 'zqe-color-picker-handle', plugins_url('zqe-color-picker.js', __FILE__ ), array( 'jquery', 'wp-color-picker' ), false, true );
+
+        wp_enqueue_media();
+
+        wp_enqueue_style( 'zqe-wp-settings-api', plugin_dir_url( __FILE__ ) . 'css/zqe-wp-settings-api.css', array( 'wp-color-picker' ), '1.0.0', 'all' );
+        wp_enqueue_style( 'zqe-from-field-dependency', plugin_dir_url( __FILE__ ) . 'css/zqe-from-field-dependency.css', array(), '1.0.0', 'all' );
+        
+        wp_enqueue_script( 'zqe-from-field-dependency', plugin_dir_url( __FILE__ ) . 'js/zqe-from-field-dependency.js', array( 'jquery' ), '1.0.0', true );
+        wp_enqueue_script( 'zqe-wp-settings-api', plugin_dir_url( __FILE__ ) . 'js/zqe-wp-settings-api.js', array( 'jquery', 'wp-color-picker', 'zqe-from-field-dependency' ), '1.0.0', true );
     }
+
+    /**
+     * set_name
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function set_name( $name ) {
         $this->name = $name;
         return $this;
     }
+
+    /**
+     * set_pages
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function set_pages( $pages ) {
         $this->pages = $pages;
         return $this;
     }
+
+    /**
+     * set_defaults
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function set_defaults(  ) {
         $defaults = array();
         foreach ( $this->pages as $key => $page ) {
@@ -37,6 +79,14 @@ class Wp_Settings_Api {
         $this->defaults = $defaults;
         return $this;
     }
+
+    /**
+     * admin_init
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function admin_init() {
         foreach ($this->pages as $key => $page) {
             register_setting( $page['group'], $this->name, [ $this, 'sanitize_callback' ] );
@@ -54,6 +104,14 @@ class Wp_Settings_Api {
             }
         }
     }
+
+    /**
+     * sanitize_callback
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function sanitize_callback( $options ) {
         $options = $this->sanitize_options( $options );
         if ( is_array( get_option( $this->name ) ) && is_array( $options ) ) {
@@ -61,6 +119,14 @@ class Wp_Settings_Api {
         }
         return $options; 
     }
+
+    /**
+     * sanitize_options
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function sanitize_options( $options ) {
         $page = current(array_keys($options));
         $defaults = $this->defaults[$page];
@@ -71,7 +137,15 @@ class Wp_Settings_Api {
         }
         return $options;
     }
-    public function get_option( $key = false ) {
+
+    /**
+     * get_option
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
+    public function get_option( $key = false, $default = false ) {
         $options = get_option( $this->name ) ? get_option( $this->name ) : array();
         if( is_array( $options ) && ! empty( $options ) ) {
             if( ! $key  ) {
@@ -99,7 +173,16 @@ class Wp_Settings_Api {
                 }
             }
         }
+        return $default;
     }
+
+    /**
+     * Show forms
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function show_forms() {
         foreach ( $this->pages as $key => $page ) { 
             $current_tab = isset( $_GET['tab'] ) ? $_GET['tab'] : current( $this->pages )['id'];
@@ -118,6 +201,14 @@ class Wp_Settings_Api {
         <style type="text/css">.zqe-options-group h2{font-size:1.5em;margin-bottom:10px}.zqe-options-group .form-table{margin-top:15px;background:#fff;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.07),0 1px 1px rgba(0,0,0,.04)}.zqe-options-group .form-table tr{border-bottom:1px solid #eee;display:block}.zqe-options-group .form-table tr:last-child{border:0}.zqe-options-group .form-table th{padding:20px 10px 20px 20px}.zqe-options-group .zqe-new-setting-field,.zqe-options-group .zqe-pro-setting-field{font-size:9px;font-weight:400;text-transform:uppercase;padding:3px 5px;line-height:1;border-radius:10px;display:inline-block;margin:0 3px}.zqe-options-group .zqe-pro-setting-field{color:#fff;background:#ff5722}.zqe-options-group .zqe-new-setting-field{border:1px solid #ff5722;color:#ff5722;background:#fff}</style>
         <?php
     }
+
+    /**
+     * do_settings_sections
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     private function do_settings_sections( $page ) {
         global $wp_settings_sections, $wp_settings_fields;
         if ( ! isset( $wp_settings_sections[ $page ] ) ) {
@@ -138,13 +229,24 @@ class Wp_Settings_Api {
             echo '</table>';
         }
     }
+
+    /**
+     * do_settings_fields
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     private function do_settings_fields( $page, $section ) {
         global $wp_settings_fields;
         if ( ! isset( $wp_settings_fields[ $page ][ $section ] ) ) {
             return;
         }
         foreach ( (array) $wp_settings_fields[ $page ][ $section ] as $field ) {
-            echo '<tr>';
+            
+            $dependency = empty($field['dependency']) ? '' : "data-dependency='" . esc_json(wp_json_encode($field['dependency'])) . "'";
+
+            echo '<tr ' . $dependency . '>';
                 echo '<th scope="row">';
                     if ( ! ( $field['args']['type'] == 'checkbox' || $field['args']['type'] == 'radio' ) ) {
                         echo '<label for="zqe-' . esc_attr( $field['id'] ) . '">' . $field['title'] . '</label>';
@@ -161,6 +263,13 @@ class Wp_Settings_Api {
         }
     }
 
+    /**
+     * Callback
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function callback( $args ) {
         $args['value'] = $this->get_option( $args['id'] );
         $args['size']  = isset( $args['size'] ) && ! is_null( $args['size'] ) ? $args['size'] : 'small';
@@ -190,6 +299,13 @@ class Wp_Settings_Api {
         }
     }
 
+    /**
+     * Checkbox
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function checkbox( $args ) {
         echo '<fieldset>';
         if( isset($args['options']) && is_array($args['options']) ) {
@@ -207,6 +323,14 @@ class Wp_Settings_Api {
         }
         echo '</fieldset>';
     }
+
+    /**
+     * Radio
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function radio( $args ) {
         echo '<fieldset>';
         foreach ( $args['options'] as $key => $label ) {
@@ -218,6 +342,14 @@ class Wp_Settings_Api {
         echo $this->field_description( $args );
         echo '</fieldset>';
     }
+
+    /**
+     * Select
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function select( $args ) {
         echo sprintf( '<select id="zqe-%2$s-%3$s" name="%1$s[%2$s][%3$s]">', $this->name, $args['page'], $args['id']);
         foreach ( $args['options'] as $key => $option ) {
@@ -226,10 +358,26 @@ class Wp_Settings_Api {
         echo sprintf( '</select>');
         echo $this->field_description( $args );
     }
+
+    /**
+     * Color
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function color( $args ) {
         echo sprintf( '<input type="text" class="zqe-color-picker wp-color-picker" id="zqe-%2$s-%3$s" name="%1$s[%2$s][%3$s]" value="%4$s" />', $this->name, $args['page'], $args['id'], $args['value'] );
         echo $this->field_description( $args );
     }
+
+    /**
+     * wysiwyg
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function wysiwyg( $args ) {
         $editor_settings = array(
             'teeny'         => true,
@@ -242,15 +390,38 @@ class Wp_Settings_Api {
         wp_editor( $args['value'], $this->name . '-' . $args['id'], $editor_settings );
         echo $this->field_description( $args );
     }
+
+    /**
+     * Text
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function text( $args ) {
         echo sprintf( '<input type="text" class="%5$s-text" id="zqe-%2$s-%3$s" name="%1$s[%2$s][%3$s]" value="%4$s"/>', $this->name, $args['page'], $args['id'], $args['value'], $args['size']);
         echo $this->field_description( $args );
     }
+
+    /**
+     * Number
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function number( $args ) {
         echo sprintf( '<input type="number" class="%5$s-text" id="zqe-%2$s-%3$s" name="%1$s[%2$s][%3$s]" value="%4$s"/> %6$s', $this->name, $args['page'], $args['id'], $args['value'], $args['size'], $args['suffix']);
         echo $this->field_description( $args );
     }
 
+    /**
+     * Field description
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
     public function field_description( $args, $html = '' ) {
         if ( ! empty( $args['desc'] ) ) {
             return sprintf( '<p class="description"><i><small>%s</small></i></p>', $args['desc'] );
