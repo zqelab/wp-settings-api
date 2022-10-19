@@ -243,8 +243,8 @@ class Wp_Settings_Api {
             return;
         }
         foreach ( (array) $wp_settings_fields[ $page ][ $section ] as $field ) {
-            
-            $dependency = empty($field['dependency']) ? '' : "data-dependency='" . esc_json(wp_json_encode($field['dependency'])) . "'";
+
+            $dependency = empty($field['args']['dependency']) ? '' : "data-dependency='" . self::esc_json( wp_json_encode( self::prepare_dependency( $field ) ) ) . "'";
 
             echo '<tr ' . $dependency . '>';
                 echo '<th scope="row">';
@@ -261,6 +261,40 @@ class Wp_Settings_Api {
                 echo '</td>';
             echo '</tr>';
         }
+    }
+
+    /**
+     * prepare_dependency
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
+    public static function prepare_dependency( $field ) {
+        if(  empty($field['args']['dependency']) ){
+            return '';
+        }
+        $dependency = array();
+        foreach ( $field['args']['dependency'] as $id => $value ) {
+            $dependency[ sprintf( '#%s-%s-%s', 'zqe', $field['args']['page'], $id ) ] = $value;
+        }
+        return array( $dependency );
+    }
+
+    /**
+     * esc_json
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
+    public static function esc_json( $json, $html = false ) {
+        return _wp_specialchars(
+            $json,
+            $html ? ENT_NOQUOTES : ENT_QUOTES, // Escape quotes in attribute nodes only.
+            'UTF-8',                           // json_encode() outputs UTF-8 (really just ASCII), not the blog's charset.
+            true                               // Double escape entities: `&amp;` -> `&amp;amp;`.
+        );
     }
 
     /**
