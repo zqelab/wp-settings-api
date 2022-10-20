@@ -13,7 +13,7 @@
                 this.action();
             }
             init() {
-                this.$element.addClass('has-dependency-data');
+                this.$element.hide(200);
                 let attribute = this.settings.attribute.trim()
                 let conditionString = this.$element.attr(attribute).replace(/'/g, '"')
                 this.conditions = JSON.parse(conditionString);
@@ -22,10 +22,10 @@
             }
             showHide(success) {
                 if (success) {
-                    this.$element.removeClass('dependency-show').addClass('dependency-show')
+                    this.$element.removeClass('dependency-show').addClass('dependency-show').show(200)
                     return true;
                 } else {
-                    this.$element.removeClass('dependency-show')
+                    this.$element.removeClass('dependency-show').hide(200)
                     return false;
                 }
             }

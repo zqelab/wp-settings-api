@@ -63,7 +63,7 @@ class Wp_Settings_Api {
      *
      * @param
      */
-    public function set_defaults(  ) {
+    public function set_defaults() {
         $defaults = array();
         foreach ( $this->pages as $key => $page ) {
             foreach ( $page['sections'] as $key => $section ) {
@@ -81,6 +81,24 @@ class Wp_Settings_Api {
     }
 
     /**
+     * set_defaults
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
+    public function get_default_values( ) {
+        $defaults = array();
+        foreach ( $this->pages as $key => $page ) {
+            foreach ( $page['sections'] as $key => $section ) {
+                foreach ( $section['fields'] as $key => $field ) { 
+                   $defaults[$page['id']][$field['id']] = $field['default'];
+                }
+            }
+        }
+        return $defaults;
+    }
+    /**
      * admin_init
      * 
      * @since    1.0.0
@@ -88,18 +106,68 @@ class Wp_Settings_Api {
      * @param
      */
     public function admin_init() {
+
         foreach ($this->pages as $key => $page) {
-            register_setting( $page['group'], $this->name, [ $this, 'sanitize_callback' ] );
+            
+
+            /**
+             * @param string $option_group A settings group name. Should correspond to an allowed option key name. Default allowed option key names include 'general', 'discussion', 'media', 'reading', 'writing', and 'options'.
+             * @param string $option_name The name of an option to sanitize and save.
+             * @param array  
+             * 
+             * register_setting( $option_group, $option_name, $args = array() )
+             * 
+             */
+            register_setting( 
+                $page['group'], 
+                $this->name, 
+                [ $this, 'sanitize_callback' ] 
+            );
+
             foreach ($page['sections'] as $key => $section) {
-                add_settings_section( $section['id'], $section['title'], function () use ( $section ) {
-                    if ( isset( $section['desc'] ) && ! empty( $section['desc'] ) ) {
-                        echo '<div class="inside">' . $section['desc'] . '</div>';
-                    }
-                }, $page['id'] );
+                
+
+                /**
+                 * @param string   $id       Slug-name to identify the section. Used in the 'id' attribute of tags.
+                 * @param string   $title    Formatted title of the section. Shown as the heading for the section.
+                 * @param callable $callback Function that echos out any content at the top of the section (between heading and fields).
+                 * @param string   $page     The slug-name of the settings page on which to show the section. Built-in pages include 'general', 'reading', 'writing', 'discussion', 'media', etc. Create your own using add_options_page();
+                 * 
+                 * add_settings_section( $id, $title, $callback, $page )
+                 * 
+                 */
+                add_settings_section( 
+                    $section['id'], 
+                    $section['title'], 
+                    function () use ( $section ) {
+                        if ( isset( $section['desc'] ) && ! empty( $section['desc'] ) ) {
+                            echo '<div class="inside">' . $section['desc'] . '</div>';
+                        }
+                    }, 
+                    $page['id'] 
+                );
+
                 foreach ($section['fields'] as $key => $field) {
-                    add_settings_field( $field['id'], $field['title'], [ $this, 'callback' ], $page['id'], $section['id'], wp_parse_args( $field,
-                        [ 'page' => $page['id'] ]
-                    ) );
+
+                    /**
+                     * @param string   $id       Slug-name to identify the field. Used in the 'id' attribute of tags.
+                     * @param string   $title    Formatted title of the field. Shown as the label for the field during output.
+                     * @param callable $callback Function that fills the field with the desired form inputs. The function should echo its output.
+                     * @param string   $page     The slug-name of the settings page on which to show the section (general, reading, writing, ...).
+                     * @param string   $section  Optional. The slug-name of the section of the settings page in which to show the box. Default 'default'.
+                     * @param array    $args 
+                     * 
+                     * add_settings_field( $id, $title, $callback, $page, $section = 'default', $args = array() )
+                     * 
+                     */
+                    add_settings_field( 
+                        $field['id'], 
+                        $field['title'], 
+                        [ $this, 'callback' ], 
+                        $page['id'], 
+                        $section['id'], 
+                        wp_parse_args( $field, [ 'page' => $page['id'] ] )
+                     );
                 }
             }
         }
@@ -114,14 +182,16 @@ class Wp_Settings_Api {
      */
     public function sanitize_callback( $options ) {
         $options = $this->sanitize_options( $options );
+        $defaults = $this->get_default_values();
         if ( is_array( get_option( $this->name ) ) && is_array( $options ) ) {
             $options = array_merge( get_option( $this->name ), $options );
+            $options = array_merge( $defaults, $options );
         }
         return $options; 
     }
 
     /**
-     * sanitize_options
+     * sanitize_options - include missing key
      * 
      * @since    1.0.0
      *
@@ -145,12 +215,9 @@ class Wp_Settings_Api {
      *
      * @param
      */
-    public function get_option( $key = false, $default = false ) {
+    public function get_option( $key, $default = false ) {
         $options = get_option( $this->name ) ? get_option( $this->name ) : array();
         if( is_array( $options ) && ! empty( $options ) ) {
-            if( ! $key  ) {
-                return $options;
-            }
             foreach ($options as $page => $option) {
                 if( isset( $option[$key] ) ) {
                     return $option[$key];
@@ -158,15 +225,6 @@ class Wp_Settings_Api {
             }
         }
         if( is_array( $this->defaults ) && ! empty( $this->defaults ) ) {
-            if( ! $key  ) {
-                $options = array();
-                foreach ($this->defaults as $page => $option) {
-                    foreach ($option as $id => $value) {
-                        $options[$page][$id]=  $value['default'];
-                    }
-                }
-                return $options;
-            }
             foreach ($this->defaults as $page => $option) {
                 if( isset( $option[$key] ) ) {
                     return $option[$key]['default'];
@@ -176,6 +234,19 @@ class Wp_Settings_Api {
         return $default;
     }
 
+    /**
+     * get_option
+     * 
+     * @since    1.0.0
+     *
+     * @param
+     */
+    public function get_options() {
+        $options = get_option( $this->name ) ? get_option( $this->name ) : array();
+        $defaults = $this->get_default_values();
+        $options = array_merge( $options, $defaults );
+        return $options;
+    }
     /**
      * Show forms
      * 
@@ -305,7 +376,9 @@ class Wp_Settings_Api {
      * @param
      */
     public function callback( $args ) {
-        $args['value'] = $this->get_option( $args['id'] );
+
+
+        $args['value'] = $this->get_option( $args['id'], $args['default'] );
         $args['size']  = isset( $args['size'] ) && ! is_null( $args['size'] ) ? $args['size'] : 'small';
         $args['suffix']  = isset( $args['suffix'] ) && ! is_null( $args['suffix'] ) ? ' <span>' . $args['suffix'] . '</span>' : '';
         switch ( $args['type'] ) {
