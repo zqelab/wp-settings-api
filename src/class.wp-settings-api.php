@@ -474,7 +474,7 @@ class Wp_Settings_Api {
      * @param
      */
     public function color( $args ) {
-        echo sprintf( '<input type="text" class="zqe-color-picker wp-color-picker" id="zqe-%2$s-%3$s" name="%1$s[%2$s][%3$s]" value="%4$s" />', $this->name, $args['page'], $args['id'], $args['value'] );
+        echo sprintf( '<input type="text" class="zqe-wp-setting-api-color-picker wp-color-picker" id="zqe-%2$s-%3$s" name="%1$s[%2$s][%3$s]" value="%4$s" />', $this->name, $args['page'], $args['id'], $args['value'] );
         echo $this->field_description( $args );
     }
 
