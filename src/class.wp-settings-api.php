@@ -244,7 +244,7 @@ class Wp_Settings_Api {
     public function get_options() {
         $options = get_option( $this->name ) ? get_option( $this->name ) : array();
         $defaults = $this->get_default_values();
-        $options = array_merge( $options, $defaults );
+        $options = array_merge( $defaults, $options );
         return $options;
     }
     /**
