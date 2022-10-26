@@ -215,7 +215,7 @@ class Wp_Settings_Api {
      *
      * @param
      */
-    public function get_option( $key, $default = false ) {
+    public function get_option( $key, $default = '' ) {
         $options = get_option( $this->name ) ? get_option( $this->name ) : array();
         if( is_array( $options ) && ! empty( $options ) ) {
             foreach ($options as $page => $option) {
